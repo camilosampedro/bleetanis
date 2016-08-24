@@ -15,6 +15,8 @@ class ColorTracker:
     def run(self):
         while True:
             _, img = self.capture.read()
+            print(type(img))
+            print(img.shape)
 
             # blur the source image to reduce color noise
             blur = cv2.GaussianBlur(img, (1, 1), 0)
@@ -36,8 +38,10 @@ class ColorTracker:
             moments = cv2.moments(thresholded_img)
             area = moments['m00']
 
-            # there can be noise in the video so ignore objects with small areas
-            if(area > 10000):
+            # there can be noise in the video so ignore objects with small
+            # areas
+            if(area > 1000):
+                print('It\'s on')
                 # determine the x and y coordinates of the center of the object
                 # we are tracking by dividing the 1, 0 and 0, 1 moments by the
                 # area
@@ -57,7 +61,7 @@ class ColorTracker:
                 cv2.merge(thresholded_img, img2)
 
             # display the image
-            cv2.imshow(color_tracker_window, img2)
+            # cv2.imshow(color_tracker_window, img2)
             cv2.imshow(color_tracker_window+"raw", img)
             cv2.imshow(color_tracker_window+"thresholded", thresholded_img)
 
