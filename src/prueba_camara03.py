@@ -58,7 +58,7 @@ while True:
         if(abs(x-last_x) > 10 or abs(y-last_y) > 10):
             last_x = x
             last_y = y
-        print("x: %s, y: %s" % (x, y))
+        # print("x: %s, y: %s" % (x, y))
     else:
         print('not detected')
     # Print penguin
