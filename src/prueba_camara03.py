@@ -1,11 +1,14 @@
 import numpy as np
 import cv2
+import random
+import time
 
 # Camera source
 camera = cv2.VideoCapture(0)
 
 # Lower color recognized
 lower = np.array([85, 35, 90], dtype="uint8")
+
 # Upper color recognized
 upper = np.array([140, 85, 180], dtype="uint8")
 
@@ -19,10 +22,15 @@ flipped_pipe = cv2.flip(pipe_img, 1)
 # Trampoline image read from file
 trampoline_img = cv2.imread('trampoline.png', -1)
 
+no_penguin = True
+
 # Initialize last_x and last_y since there isn't still a recognized object, or
 # even a read image from camera
 last_x = 0
 last_y = 0
+
+points = 0
+lives = 3
 
 
 # Join two images. image1 must be larger than image2 and it doesn't control
@@ -33,8 +41,16 @@ def join_images(image1, image2, x, y):
     # Align to center.
     y = (y - image2_height / 2)
     x = (x - image2_width / 2)
+    if(x < 0 or x > image1.shape[1]):
+        return
+    if(y < 0 or y > image1.shape[0]):
+        return
     final_y = y + image2_height
     final_x = x + image2_width
+    if(final_y >= image1.shape[0]):
+        final_y = image1.shape[0]
+    if(final_x >= image1.shape[1]):
+        final_x = image1.shape[1]
     print("f_y: %s, f_x: %s" % (final_y, final_x))
     print("s_y: %s, s_x: %s" % (image1.shape[0], image1.shape[1]))
     for c in range(0, 3):
@@ -57,16 +73,24 @@ while True:
         last_x = img.shape[1]/2
     if (last_y == 0):
         last_y = img.shape[0]/2
-    # img = cv2.fastNlMeansDenoisingColored(img, img, 1, 10)
-    # define the list of boundaries)aries
-    # boundaries = [
-    #     ([17, 15, 100], [155, 155, 240]),
-    #     ([86, 31, 4], [220, 88, 50]),
-    #     ([25, 146, 190], [62, 174, 250]),
-    #     ([103, 86, 65], [145, 133, 128])
-    # ]
-    # for (lower, upper) in boundaries:
-    # Mask will contain areas that satisfy lower<pixel<upper
+
+    trampoline_y = img.shape[0]-pipe_img.shape[0]
+
+    if(no_penguin):
+        if(random.randint(0, 1) == 0):
+            penguin_x = pipe_img.shape[1]
+            penguin_speed_x = random.randint(10, 18)
+        else:
+            penguin_x = img.shape[1] - pipe_img.shape[1]
+            penguin_speed_x = -random.randint(10, 20)
+        penguin_y = 50
+        penguin_acceleration_y = 1
+        penguin_speed_y = 0
+        no_penguin = False
+    penguin_x = penguin_x + penguin_speed_x
+    penguin_speed_y = penguin_speed_y + penguin_acceleration_y
+    penguin_y = penguin_y + penguin_speed_y
+
     mask = cv2.inRange(img, lower, upper)
     # Moments contain information about the mask areas
     moments = cv2.moments(mask)
@@ -74,7 +98,7 @@ while True:
     area = moments['m00']
     # Check if area is big enough to be considered
     if(area > 90000):
-        print('detected')
+        # print('detected')
         # moments m10 and m01 will contain the found object "center"
         x = int(moments['m10']/area)
         y = int(moments['m01']/area)
@@ -83,11 +107,29 @@ while True:
             last_x = x
             last_y = y
         # print("x: %s, y: %s" % (x, y))
-    else:
-        print('not detected')
+    # else:
+        # print('not detected')
     # Always print penguin
+    cv2.putText(img_raw, "(lives: %s points: %s)" % (lives, points),
+                (img.shape[1] / 2 - 100, 50), cv2.FONT_HERSHEY_DUPLEX, 1, 100)
+    if(penguin_y >= trampoline_y):
+        if(penguin_x > last_x - trampoline_img.shape[1]/2 and
+           penguin_x < last_x + trampoline_img.shape[1]/2):
+            penguin_speed_y = -penguin_speed_y
+            penguin_speed_x = (penguin_x - last_x)/2
+        else:
+            no_penguin = True
+            lives = lives - 1
+    if(penguin_x < pipe_img.shape[1] or penguin_x >
+       img.shape[1]-pipe_img.shape[1]):
+        if(penguin_y > last_y - pipe_img.shape[0] / 2 and penguin_y <
+           last_y + pipe_img.shape[0] / 2):
+            points = points + 500
+        else:
+            lives = lives - 1
+        no_penguin = True
     print("last_x: %s, last_y: %s" % (last_x, last_y))
-    join_images(img_raw, penguin_img, last_x, last_y)
+    # join_images(img_raw, penguin_img, last_x, last_y)
 
     # Print pipes (normal and flipped) on both sides
     join_images(img_raw, pipe_img, pipe_img.shape[1], last_y)
@@ -96,10 +138,17 @@ while True:
 
     # Print trampoline on the bottom
     join_images(img_raw, trampoline_img, last_x,
-                img.shape[0]-pipe_img.shape[0])
+                trampoline_y)
+
+    print("penguin_x: %s, penguin_y: %s" % (penguin_x, penguin_y))
+    join_images(img_raw, penguin_img, penguin_x, penguin_y)
 
     # Highlight areas found
     output = cv2.bitwise_and(img_raw, img_raw, mask=mask)
+    if(lives <= 0):
+        cv2.putText(img_raw, "GAME OVER", (img.shape[1] / 2 - 100,
+                    img.shape[0] / 2 - 50),
+                    cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 1, 50)
 
     # Show raw image with the highlighted areas
     cv2.imshow("images", np.hstack([img_raw, output]))
