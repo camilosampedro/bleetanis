@@ -60,37 +60,24 @@ def join_images(image1, image2, x, y):
             (1.0 - image2[:, :, 3]/255.0)
     return image1
 
-# Always update camera image until ESC is pressed
-while True:
-    # Read image
-    _, img_raw = camera.read()
-    # Flip image for better integration with the user.
-    img_raw = cv2.flip(img_raw, 1)
-    # Apply blur to remove some color noise
-    img = cv2.GaussianBlur(np.copy(img_raw), (5, 5), 0)
-    # Initialize last_x and last_y to center
-    if (last_x == 0):
-        last_x = img.shape[1]/2
-    if (last_y == 0):
-        last_y = img.shape[0]/2
+def initialize_penguin():
+    if(random.randint(0, 1) == 0):
+        penguin_x = pipe_img.shape[1]
+        penguin_speed_x = random.randint(10, 18)
+    else:
+        penguin_x = img.shape[1] - pipe_img.shape[1]
+        penguin_speed_x = -random.randint(10, 20)
+    penguin_y = 50
+    penguin_acceleration_y = 1
+    penguin_speed_y = 0
+    no_penguin = False
 
-    trampoline_y = img.shape[0]-pipe_img.shape[0]
-
-    if(no_penguin):
-        if(random.randint(0, 1) == 0):
-            penguin_x = pipe_img.shape[1]
-            penguin_speed_x = random.randint(10, 18)
-        else:
-            penguin_x = img.shape[1] - pipe_img.shape[1]
-            penguin_speed_x = -random.randint(10, 20)
-        penguin_y = 50
-        penguin_acceleration_y = 1
-        penguin_speed_y = 0
-        no_penguin = False
+def update_penguin_coordinates():
     penguin_x = penguin_x + penguin_speed_x
     penguin_speed_y = penguin_speed_y + penguin_acceleration_y
     penguin_y = penguin_y + penguin_speed_y
 
+def detect_movement_of_color():
     mask = cv2.inRange(img, lower, upper)
     # Moments contain information about the mask areas
     moments = cv2.moments(mask)
@@ -109,6 +96,28 @@ while True:
         # print("x: %s, y: %s" % (x, y))
     # else:
         # print('not detected')
+
+# Always update camera image until ESC is pressed
+while True:
+    # Read image
+    _, img_raw = camera.read()
+    # Flip image for better integration with the user.
+    img_raw = cv2.flip(img_raw, 1)
+    # Apply blur to remove some color noise
+    img = cv2.GaussianBlur(np.copy(img_raw), (5, 5), 0)
+    # Initialize last_x and last_y to center
+    if (last_x == 0):
+        last_x = img.shape[1]/2
+    if (last_y == 0):
+        last_y = img.shape[0]/2
+
+    trampoline_y = img.shape[0]-pipe_img.shape[0]
+
+    if(no_penguin):
+        initialize_penguin()
+    update_penguin_coordinates()
+
+    detect_movement_of_color()
     # Always print penguin
     cv2.putText(img_raw, "(lives: %s points: %s)" % (lives, points),
                 (img.shape[1] / 2 - 100, 50), cv2.FONT_HERSHEY_DUPLEX, 1, 100)
