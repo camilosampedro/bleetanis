@@ -157,6 +157,54 @@ def detect_movement_of_color():
         # print('not detected')
 
 
+def check_if_penguin_has_fallen():
+    global penguin_y, trampoline_y, penguin_speed_y, penguin_speed_x, \
+           no_penguin, lives
+    if(penguin_y >= trampoline_y):
+        # --- If penguin was on trampoline zone, bounce it             ----
+        # ---    Si el pingüino estaba en la zona del trampolin,       ----
+        # ---    rebotar                                               ----
+        if(penguin_x > last_x - trampoline_img.shape[1]/2 and
+           penguin_x < last_x + trampoline_img.shape[1]/2):
+            penguin_speed_y = -penguin_speed_y
+            penguin_speed_x = (penguin_x - last_x)/2
+        else:
+            # --- Else, loose a life and reset penguin on the next     ----
+            # ---    iteration                                         ----
+            # --- Sino, perder una vida y reiniciar el pingüino en     ----
+            # ---    la siguiente iteración                            ----
+            no_penguin = True
+            lives = lives - 1
+
+
+def check_if_penguin_is_outside_screen():
+    global points, lives, no_penguin
+    if(penguin_x < pipe_img.shape[1] or penguin_x >
+       img.shape[1]-pipe_img.shape[1]):
+        # --- If it's on pipe zone, give points to the user            ----
+        # ---    Si está por la zona de los tubos, darle puntos al     ----
+        # ---    usuario                                               ----
+        if(penguin_y > last_y - pipe_img.shape[0] / 2 and penguin_y <
+           last_y + pipe_img.shape[0] / 2):
+            points = points + 500
+        else:
+            # --- Else, loose a life: Sino, perder una vida            ----
+            lives = lives - 1
+        # --- Anyway, reset penguin: Siempre resetear el pinguino      ----
+        no_penguin = True
+
+
+def print_images():
+    join_images(img_raw, pipe_img, pipe_img.shape[1], last_y)
+    join_images(img_raw, flipped_pipe,
+                img.shape[1]-pipe_img.shape[1], last_y)
+    # Print trampoline on the bottom
+    join_images(img_raw, trampoline_img, last_x,
+                trampoline_y)
+    # Debugging
+    print("penguin_x: %s, penguin_y: %s" % (penguin_x, penguin_y))
+    join_images(img_raw, penguin_img, penguin_x, penguin_y)
+
 # -------------------------------------------------------------------------
 # - 3. Lógica principal del juego     -------------------------------------
 # -------------------------------------------------------------------------
@@ -196,36 +244,19 @@ while True:
     # --- Put lives and points on User Interface                       ----
     cv2.putText(img_raw, "(lives: %s points: %s)" % (lives, points),
                 (img.shape[1] / 2 - 100, 50), cv2.FONT_HERSHEY_DUPLEX, 1, 100)
-    if(penguin_y >= trampoline_y):
-        if(penguin_x > last_x - trampoline_img.shape[1]/2 and
-           penguin_x < last_x + trampoline_img.shape[1]/2):
-            penguin_speed_y = -penguin_speed_y
-            penguin_speed_x = (penguin_x - last_x)/2
-        else:
-            no_penguin = True
-            lives = lives - 1
-    if(penguin_x < pipe_img.shape[1] or penguin_x >
-       img.shape[1]-pipe_img.shape[1]):
-        if(penguin_y > last_y - pipe_img.shape[0] / 2 and penguin_y <
-           last_y + pipe_img.shape[0] / 2):
-            points = points + 500
-        else:
-            lives = lives - 1
-        no_penguin = True
+    # --- Check if penguin has fallen from the trampoline.             ----
+    # ---    Verificar si el pingüino se cayó del trampolin            ----
+    check_if_penguin_has_fallen()
+    # --- Check if penguin is on x axis borders                        ----
+    # ---    Verificar si el pinguino está saliéndose por los ejes de  ----
+    # ---    X                                                         ----
+    check_if_penguin_is_outside_screen()
+    # --- Debugging, this could be commented                           ----
     print("last_x: %s, last_y: %s" % (last_x, last_y))
     # join_images(img_raw, penguin_img, last_x, last_y)
 
     # Print pipes (normal and flipped) on both sides
-    join_images(img_raw, pipe_img, pipe_img.shape[1], last_y)
-    join_images(img_raw, flipped_pipe,
-                img.shape[1]-pipe_img.shape[1], last_y)
-
-    # Print trampoline on the bottom
-    join_images(img_raw, trampoline_img, last_x,
-                trampoline_y)
-
-    print("penguin_x: %s, penguin_y: %s" % (penguin_x, penguin_y))
-    join_images(img_raw, penguin_img, penguin_x, penguin_y)
+    print_images()
 
     # Highlight areas found
     output = cv2.bitwise_and(img_raw, img_raw, mask=mask)
