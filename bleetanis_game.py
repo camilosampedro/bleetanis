@@ -65,41 +65,42 @@ def setup():
 # -------------------------------------------------------------------------
 
 
-# --- Join two images. image1 must be larger than image2               ----
-# --- Pegar dos imágenes, image1 sobre image2. image1 debe ser más     ----
-# ---    grande que image2                                             ----
-def join_images(image1, image2, x, y):
+# --- Join two images. base_image must be larger than top_image           ----
+# --- Pegar dos imágenes, base_image sobre top_image. base_image debe ser ----
+# ---    más grande que top_image                                         ----
+def join_images(base_image, top_image, x, y):
     # Image dimensions
-    image2_height = image2.shape[0]
-    image2_width = image2.shape[1]
-    image1_height = image1.shape[0]
-    image1_width = image1.shape[1]
+    top_image_height = top_image.shape[0]
+    top_image_width = top_image.shape[1]
+    base_image_height = base_image.shape[0]
+    base_image_width = base_image.shape[1]
     # Align to center, x and y will be the initial coordinates
-    y = (y - image2_height / 2)
-    x = (x - image2_width / 2)
+    y = (y - top_image_height / 2)
+    x = (x - top_image_width / 2)
     # If x or why exit the larger image dimensions
-    if(x < 0 or x > image1_width or y < 0 or y > image1_height):
+    if(x < 0 or x > base_image_width or y < 0 or y > base_image_height):
         return
     # final_x and final_y will be the ending coordinates
-    final_y = y + image2_height
-    final_x = x + image2_width
-    # If any of final_x or final_y exceed the image1 size, reasign that size
-    # limit to that ending coordinate
-    if(final_y >= image1_height):
-        final_y = image1_height
-    if(final_x >= image1_width):
-        final_x = image1_width
+    final_y = y + top_image_height
+    final_x = x + top_image_width
+    # If any of final_x or final_y exceed the base_image size, reasign that
+    # size limit to that ending coordinate
+    if(final_y >= base_image_height):
+        final_y = base_image_height
+    if(final_x >= base_image_width):
+        final_x = base_image_width
     # Debugging... This could be commented
     print("f_y: %s, f_x: %s" % (final_y, final_x))
-    print("s_y: %s, s_x: %s" % (image1_height, image1_width))
+    print("s_y: %s, s_x: %s" % (base_image_height, base_image_width))
     # For all layers but alpha layer
     for layer in range(0, 3):
-        # Insert the image2 on image1, multiplying alpha times for transparency
-        image1[y:final_y, x:final_x, layer] = \
-            image2[:, :, layer] * (image2[:, :, 3]/255.0) + \
-            image1[y:final_y, x: final_x, layer] * \
-            (1.0 - image2[:, :, 3]/255.0)
-    return image1
+        # Insert the top_image on base_image, multiplying alpha times for
+        # transparency
+        base_image[y:final_y, x:final_x, layer] = \
+            top_image[:, :, layer] * (top_image[:, :, 3]/255.0) + \
+            base_image[y:final_y, x: final_x, layer] * \
+            (1.0 - top_image[:, :, 3]/255.0)
+    return base_image
 
 
 # --- Initialize penguin coordinates (Randomize it): Inicializar las    ----
