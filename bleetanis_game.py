@@ -1,61 +1,64 @@
-# -------------------------------------------------------------------------
-# ------ BLEETANIS --------------------------------------------------------
-# ------ Juego básico con cámara en OpenCV --------------------------------
-# ------ Por: Camilo A. Sampedro camilo.sampedro@udea.edu.co --------------
-# ------      Estudiante ingeniería de sistemas, Universidad de Antioquia -
-# ------      CC 1037640884 -----------------------------------------------
-# ------ Por: C. Vanessa Pérez cvanessa.perez@udea.edu.co -----------------
-# ------      Estudiante ingeniería de sistemas, Universidad de Antioquia -
-# ------      CC **Cédula** -----------------------------------------------
-# ------ Curso Básico de Procesamiento de Imágenes y Visión Artificial ----
-# ------ V1 Septiembre de 2016---------------------------------------------
-# ------ Nota: Algunos comentarios se dejaron en inglés para mantener la --
-# ------   aplicación legible para ambos idiomas (Inglés y español).     --
-# ------ Note: Some comments were left on English to keep the            --
-# ------   application readable for both English and Spanish.            --
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# ------ BLEETANIS ------------------------------------------------------------
+# ------ Juego básico con cámara en OpenCV ------------------------------------
+# ------ Por: Camilo A. Sampedro camilo.sampedro@udea.edu.co ------------------
+# ------      Estudiante ingeniería de sistemas, Universidad de Antioquia -----
+# ------      CC 1037640884 ---------------------------------------------------
+# ------ Por: C. Vanessa Pérez cvanessa.perez@udea.edu.co ---------------------
+# ------      Estudiante ingeniería de sistemas, Universidad de Antioquia -----
+# ------      CC **Cédula** ---------------------------------------------------
+# ------ Curso Básico de Procesamiento de Imágenes y Visión Artificial --------
+# ------ V1 Septiembre de 2016-------------------------------------------------
+# ------ Nota: Algunos comentarios se dejaron en inglés para mantener la ------
+# ------   aplicación legible para ambos idiomas (Inglés y español).     ------
+# ------ Note: Some comments were left on English to keep the            ------
+# ------   application readable for both English and Spanish.            ------
+# -----------------------------------------------------------------------------
 
-# -------------------------------------------------------------------------
-# - 1. Librerías necesarias -----------------------------------------------
-# -   Numpy para representación de datos ----------------------------------
-# -   OpenCV para procesamiento de imágenes -------------------------------
-# -   Random para generar números aleatorios ------------------------------
-# -------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# - 1. Librerías necesarias ---------------------------------------------------
+# -   Numpy para representación de datos --------------------------------------
+# -   OpenCV para procesamiento de imágenes -----------------------------------
+# -   Random para generar números aleatorios ----------------------------------
+# -----------------------------------------------------------------------------
 import numpy as np
 import cv2
 import random
 
-# -------------------------------------------------------------------------
-# - 1. Inicialización del sistema -----------------------------------------
-# -------------------------------------------------------------------------
 
-# --- Se inicializan variables globales del programa ----------------------
-# ---    Camera source: De aquí se obtienen las imágenes de la cámara -----
-camera = cv2.VideoCapture(0)
-# ---    Lower color recognized: Este es el color mínimo a reconocer  -----
-lower = np.array([85, 35, 90], dtype="uint8")
-# ---    Upper color recognized: Este es el color máximo a reconocer  -----
-upper = np.array([140, 85, 180], dtype="uint8")
-# ---    Penguin image read from file: Leer la imagen del pingüino    -----
-penguin_img = cv2.imread('penguin-icon-little.png', -1)
-# ---    Pipe image read from file: Leer la imagen del tubo           -----
-pipe_img = cv2.imread('pipe.png', -1)
-# ---    Flip pipe on x-axis: Girar el tubo para pintarlo en la derecha ---
-flipped_pipe = cv2.flip(pipe_img, 1)
-# ---    Trampoline image read from file: Leer la imagen del trampolín ----
-trampoline_img = cv2.imread('trampoline.png', -1)
-# ---    This flag will save when there is a penguin on screen: Esta   ----
-# ---       bandera dirá cuándo hay un pingüino en la pantalla (Para   ----
-# ---       pintarlo de nuevo)                                         ----
-no_penguin = True
-# ---    last_x and last_y save the latest recognized mouse location:  ----
-# ---       Estas dos variables guardan dónde se reconoció el color    ----
-last_x = 0
-last_y = 0
+# -----------------------------------------------------------------------------
+# - 1. Inicialización del sistema ---------------------------------------------
+# -----------------------------------------------------------------------------
+def setup():
+    global camera, lower, upper, penguin_img, pipe_img, flipped_pipe, \
+           trampoline_img, no_penguin, last_x, last_y, points, lives
+    # --- Se inicializan variables globales del programa ----------------------
+    # --- Camera source: De aquí se obtienen las imágenes de la cámara    -----
+    camera = cv2.VideoCapture(0)
+    # ---    Lower color recognized: Este es el color mínimo a reconocer  -----
+    lower = np.array([85, 35, 90], dtype="uint8")
+    # ---    Upper color recognized: Este es el color máximo a reconocer  -----
+    upper = np.array([140, 85, 180], dtype="uint8")
+    # ---    Penguin image read from file: Leer la imagen del pingüino    -----
+    penguin_img = cv2.imread('penguin-icon-little.png', -1)
+    # ---    Pipe image read from file: Leer la imagen del tubo           -----
+    pipe_img = cv2.imread('pipe.png', -1)
+    # ---    Flip pipe on x-axis: Girar el tubo para pintarlo en la derecha ---
+    flipped_pipe = cv2.flip(pipe_img, 1)
+    # ---    Trampoline image read from file: Leer la imagen del trampolín ----
+    trampoline_img = cv2.imread('trampoline.png', -1)
+    # ---    This flag will save when there is a penguin on screen: Esta   ----
+    # ---       bandera dirá cuándo hay un pingüino en la pantalla (Para   ----
+    # ---       pintarlo de nuevo)                                         ----
+    no_penguin = True
+    # ---    last_x and last_y save the latest recognized mouse location:  ----
+    # ---       Estas dos variables guardan dónde se reconoció el color    ----
+    last_x = 0
+    last_y = 0
 
-# --- User lives and points: Contador de vidas y puntos                ----
-points = 0
-lives = 3
+    # --- User lives and points: Contador de vidas y puntos                ----
+    points = 0
+    lives = 3
 
 # -------------------------------------------------------------------------
 # - 2. Funciones del programa     -----------------------------------------
@@ -212,6 +215,7 @@ def print_images():
 # --- Siempre actualizar la imagen desde la cámara hasta que se -----------
 # --- presione la tecla ESC                                     -----------
 # -------------------------------------------------------------------------
+setup()
 while True:
     # --- Read image: Leer la imagen desde la cámara                   ----
     _, img_raw = camera.read()
