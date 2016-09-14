@@ -6,7 +6,7 @@
 # ------      CC 1037640884 ---------------------------------------------------
 # ------ Por: C. Vanessa Pérez cvanessa.perez@udea.edu.co ---------------------
 # ------      Estudiante ingeniería de sistemas, Universidad de Antioquia -----
-# ------      CC **Cédula** ---------------------------------------------------
+# ------      CC 1128440531 ---------------------------------------------------
 # ------ Curso Básico de Procesamiento de Imágenes y Visión Artificial --------
 # ------ V1 Septiembre de 2016-------------------------------------------------
 # ------ Nota: Algunos comentarios se dejaron en inglés para mantener la ------
