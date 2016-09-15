@@ -90,8 +90,8 @@ def join_images(base_image, top_image, x, y):
     if(final_x >= base_image_width):
         final_x = base_image_width
     # Debugging... This could be commented
-    print("f_y: %s, f_x: %s" % (final_y, final_x))
-    print("s_y: %s, s_x: %s" % (base_image_height, base_image_width))
+    # print("f_y: %s, f_x: %s" % (final_y, final_x))
+    # print("s_y: %s, s_x: %s" % (base_image_height, base_image_width))
     # For all layers but alpha layer
     for layer in range(0, 3):
         # Insert the top_image on base_image, multiplying alpha times for
@@ -161,6 +161,9 @@ def detect_movement_of_color():
         # print('not detected')
 
 
+# --- Check if penguin is at the bottom of the image:                  ----
+# ---    Verificar si el pingüíno está en la parte inferior de la      ----
+# ---    imagen                                                        ----
 def check_if_penguin_has_fallen():
     global penguin_y, trampoline_y, penguin_speed_y, penguin_speed_x, \
            no_penguin, lives
@@ -181,6 +184,10 @@ def check_if_penguin_has_fallen():
             lives = lives - 1
 
 
+# --- Check if penguin has overpassed the image limits and apply       ----
+# ---    actions when needed.                                          ----
+# --- Chequear si el pinguino se salió de los límites de la imagen y   ----
+# ---    aplicar las acciones que se necesiten.                        ----
 def check_if_penguin_is_outside_screen():
     global points, lives, no_penguin
     if(penguin_x < pipe_img.shape[1] or penguin_x >
@@ -198,6 +205,8 @@ def check_if_penguin_is_outside_screen():
         no_penguin = True
 
 
+# --- Print all images on the last coordinates:                        ----
+# ---    Pintar todas las imágenes en las coordenadas                  ----
 def print_images():
     join_images(img_raw, pipe_img, pipe_img.shape[1], last_y)
     join_images(img_raw, flipped_pipe,
@@ -206,7 +215,7 @@ def print_images():
     join_images(img_raw, trampoline_img, last_x,
                 trampoline_y)
     # Debugging
-    print("penguin_x: %s, penguin_y: %s" % (penguin_x, penguin_y))
+    # print("penguin_x: %s, penguin_y: %s" % (penguin_x, penguin_y))
     join_images(img_raw, penguin_img, penguin_x, penguin_y)
 
 # -------------------------------------------------------------------------
@@ -248,7 +257,8 @@ while True:
     detect_movement_of_color()
     # --- Put lives and points on User Interface                       ----
     cv2.putText(img_raw, "(lives: %s points: %s)" % (lives, points),
-                (img.shape[1] / 2 - 100, 50), cv2.FONT_HERSHEY_DUPLEX, 1, 100)
+                (int(img.shape[1] / 2 - 100), 50), cv2.FONT_HERSHEY_DUPLEX, 1,
+                100)
     # --- Check if penguin has fallen from the trampoline.             ----
     # ---    Verificar si el pingüino se cayó del trampolin            ----
     check_if_penguin_has_fallen()
@@ -257,7 +267,7 @@ while True:
     # ---    X                                                         ----
     check_if_penguin_is_outside_screen()
     # --- Debugging, this could be commented                           ----
-    print("last_x: %s, last_y: %s" % (last_x, last_y))
+    # print("last_x: %s, last_y: %s" % (last_x, last_y))
     # join_images(img_raw, penguin_img, last_x, last_y)
 
     # Print pipes (normal and flipped) on both sides
@@ -266,12 +276,13 @@ while True:
     # Highlight areas found
     output = cv2.bitwise_and(img_raw, img_raw, mask=mask)
     if(lives <= 0):
-        cv2.putText(img_raw, "GAME OVER", (img.shape[1] / 2 - 100,
-                    img.shape[0] / 2 - 50),
+        cv2.putText(img_raw, "GAME OVER", (int(img.shape[1] / 2 - 100),
+                    int(img.shape[0] / 2 - 50)),
                     cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 1, 50)
 
     # Show raw image with the highlighted areas
-    cv2.imshow("images", np.hstack([img_raw, output]))
+    # cv2.imshow("images", np.hstack([img_raw, output]))
+    cv2.imshow("images", img_raw)
 
     # Verify if ESC key is pressed and break
     if cv2.waitKey(10) == 27:
