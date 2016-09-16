@@ -20,10 +20,12 @@
 # -   Numpy para representación de datos --------------------------------------
 # -   OpenCV para procesamiento de imágenes -----------------------------------
 # -   Random para generar números aleatorios ----------------------------------
+# -   PyGame para reproducir sonidos ------------------------------------------
 # -----------------------------------------------------------------------------
 import numpy as np
 import cv2
 import random
+import pygame
 
 
 # -----------------------------------------------------------------------------
@@ -35,6 +37,11 @@ def setup():
     # --- Se inicializan variables globales del programa ----------------------
     # --- Camera source: De aquí se obtienen las imágenes de la cámara    -----
     camera = cv2.VideoCapture(0)
+    # --- Music: Música      --------------------------------------------------
+    pygame.init()
+    pygame.mixer.music.load("song"+str(random.randint(1, 3))+".wav")
+    # --- Loop forever    -----------------------------------------------------
+    pygame.mixer.music.play(loops=-1)
     # ---    Lower color recognized: Este es el color mínimo a reconocer  -----
     lower = np.array([85, 35, 90], dtype="uint8")
     # ---    Upper color recognized: Este es el color máximo a reconocer  -----
@@ -78,17 +85,17 @@ def join_images(base_image, top_image, x, y):
     y = (y - top_image_height / 2)
     x = (x - top_image_width / 2)
     # If x or why exit the larger image dimensions
-    if(x < 0 or x > base_image_width or y < 0 or y > base_image_height):
+    if(x < 10 or x > base_image_width or y < 10 or y > base_image_height):
         return
     # final_x and final_y will be the ending coordinates
     final_y = y + top_image_height
     final_x = x + top_image_width
     # If any of final_x or final_y exceed the base_image size, reasign that
     # size limit to that ending coordinate
-    if(final_y >= base_image_height):
-        final_y = base_image_height
-    if(final_x >= base_image_width):
-        final_x = base_image_width
+    if(final_y >= base_image_height-10):
+        final_y = base_image_height-10
+    if(final_x >= base_image_width-10):
+        final_x = base_image_width-10
     # Debugging... This could be commented
     # print("f_y: %s, f_x: %s" % (final_y, final_x))
     # print("s_y: %s, s_x: %s" % (base_image_height, base_image_width))
@@ -181,7 +188,8 @@ def check_if_penguin_has_fallen():
             # --- Sino, perder una vida y reiniciar el pingüino en     ----
             # ---    la siguiente iteración                            ----
             no_penguin = True
-            lives = lives - 1
+            if lives > 0:
+                lives = lives - 1
 
 
 # --- Check if penguin has overpassed the image limits and apply       ----
@@ -200,7 +208,8 @@ def check_if_penguin_is_outside_screen():
             points = points + 500
         else:
             # --- Else, loose a life: Sino, perder una vida            ----
-            lives = lives - 1
+            if lives > 0:
+                lives = lives - 1
         # --- Anyway, reset penguin: Siempre resetear el pinguino      ----
         no_penguin = True
 
@@ -258,7 +267,7 @@ while True:
     # --- Put lives and points on User Interface                       ----
     cv2.putText(img_raw, "(lives: %s points: %s)" % (lives, points),
                 (int(img.shape[1] / 2 - 100), 50), cv2.FONT_HERSHEY_DUPLEX, 1,
-                100)
+                (255, 255, 255))
     # --- Check if penguin has fallen from the trampoline.             ----
     # ---    Verificar si el pingüino se cayó del trampolin            ----
     check_if_penguin_has_fallen()
@@ -276,13 +285,16 @@ while True:
     # Highlight areas found
     output = cv2.bitwise_and(img_raw, img_raw, mask=mask)
     if(lives <= 0):
+        cv2.putText(img_raw, "Press <ESC> to exit",
+                    (int(img.shape[1] / 2 - 150), int(img.shape[0] / 2 + 50)),
+                    cv2.FONT_HERSHEY_DUPLEX, 1, (157, 15, 252))
         cv2.putText(img_raw, "GAME OVER", (int(img.shape[1] / 2 - 100),
                     int(img.shape[0] / 2 - 50)),
-                    cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 1, 50)
+                    cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 1, (255, 255, 255))
 
     # Show raw image with the highlighted areas
-    # cv2.imshow("images", np.hstack([img_raw, output]))
-    cv2.imshow("images", img_raw)
+    cv2.imshow("images", np.hstack([img_raw, output]))
+    # cv2.imshow("Bleetanis - Press ESC to exit - OpenCV", img_raw)
 
     # Verify if ESC key is pressed and break
     if cv2.waitKey(10) == 27:
